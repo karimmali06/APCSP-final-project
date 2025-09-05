@@ -1,0 +1,102 @@
+var CountryName = getColumn("Countries and Territories", "Country Name");
+var Region = getColumn("Countries and Territories", "Region");
+var IncomeLevel = getColumn("Countries and Territories", "Income Level");
+var Population = getColumn("Countries and Territories", "Population");
+var Unemployment = getColumn("Countries and Territories", "Unemployment");
+var GDPPerCapita = getColumn("Countries and Territories", "GDP Per Capita");
+var Flag = getColumn("Countries and Territories", "Flag");
+var NationalAnthem = getColumn("Countries and Territories", "National Anthem");
+var textOutput;
+var currentNationalAnthem = null; // Track the currently playing national anthem
+
+// Filtered lists
+var filteredCountryName = [];
+var filteredFact = [];
+var filteredAnswer = [];
+
+
+// On events
+onEvent("CountryDropDown", "input", function() {
+  filter(getText("CountryDropDown"), getText("FactDropDown"));
+  getAnswer(filteredAnswer);
+  updateScreen(filteredCountryName, filteredFact, filteredAnswer);
+});
+
+onEvent("FactDropDown", "input", function() {
+  filter(getText("CountryDropDown"), getText("FactDropDown"));
+  getAnswer(filteredAnswer);
+  updateScreen(filteredCountryName, filteredFact, filteredAnswer);
+});
+
+
+// Functions
+function filter(CountryInput, FactInput) {
+  resetLists();
+  for (var i = 0; i < CountryName.length; i++) {
+    if (CountryInput == CountryName[i]) {
+      appendItem(filteredCountryName, CountryInput);
+      appendItem(filteredFact, FactInput);
+      appendItem(filteredAnswer, getAnswer(FactInput)[i]);
+    }
+  }
+}
+
+function resetLists() {
+  filteredCountryName = [];
+  filteredFact = [];
+  filteredAnswer = [];
+}
+
+function getAnswer(FactInput) {
+  if (FactInput == "Region") {
+    return Region;
+  } else if (FactInput == "Income Level") {
+    return IncomeLevel;
+  } else if (FactInput == "Population") {
+    return Population;
+  } else if (FactInput == "Unemployment Rate") {
+    return Unemployment;
+  } else if (FactInput == "GDP Per Capita") {
+    return GDPPerCapita;
+  } else if (FactInput == "Flag") {
+    return Flag;
+  } else if (FactInput == "National Anthem") {
+    return NationalAnthem;
+  } else return CountryName;
+}
+
+function updateScreen(CountryFilter, factFilter, AnswerFilter) {
+  var selectedIndex = CountryName.indexOf(CountryFilter[0]);
+  if (factFilter[0] == "Flag") {
+    // Display only the country name and the fact
+    textOutput = "Country: " + CountryFilter[0] + "\nFact: " + factFilter[0];
+    setImageURL("FlagImageBox", Flag[selectedIndex]);
+    setText("Output", textOutput); // Set output text for Flag
+    // Stop the currently playing national anthem if any
+    if (currentNationalAnthem !== null) {
+      stopSound(currentNationalAnthem);
+      currentNationalAnthem = null; // Reset the current national anthem
+    }
+  } else if (factFilter[0] == "National Anthem") {
+    // Stop the currently playing national anthem if any
+    if (currentNationalAnthem !== null) {
+      stopSound(currentNationalAnthem);
+    }
+    // Play the new national anthem
+    currentNationalAnthem = playSound(AnswerFilter[0]);
+    // Hide the MP3 link by clearing the output text for "National Anthem"
+    textOutput = "Country: " + CountryFilter[0] + "\nFact: " + factFilter[0] + "\nAnswer: ";
+    setText("Output", textOutput);
+    setImageURL("FlagImageBox", "");
+  } else {
+    // Stop the currently playing national anthem if any
+    if (currentNationalAnthem !== null) {
+      stopSound(currentNationalAnthem);
+      currentNationalAnthem = null; // Reset the current national anthem
+    }
+    // Display the country name, the fact, and the answer
+    textOutput = "Country: " + CountryFilter[0] + "\nFact: " + factFilter[0] + "\nAnswer: " + AnswerFilter[0];
+    setImageURL("FlagImageBox", "");
+    setText("Output", textOutput); // Set output text for other facts
+  }
+}
